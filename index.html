@@ -16,19 +16,20 @@
       --c-yellow: #f9a825;
       --c-white: #ffffff;
       --c-text: #2c3e50;
-      --c-bg-overlay: rgba(0, 0, 0, 0.75);
+      --c-bg-overlay: rgba(0, 0, 0, 0.85); /* Tối hơn chút để tập trung */
+      --c-green-btn: #2e7d32;
     }
 
-    /* --- NÚT BẤM (ĐIỀU CHỈNH NHỎ LẠI) --- */
+    /* --- NÚT BẤM DOCK --- */
     #idcr-root .idcr-dock {
-      position: fixed; bottom: 10px; left: 10px; /* Sát góc hơn */
-      display: flex; flex-direction: column-reverse; gap: 8px; /* Giảm khoảng cách */
+      position: fixed; bottom: 10px; left: 10px;
+      display: flex; flex-direction: column-reverse; gap: 8px;
       z-index: 2147483640;
     }
     #idcr-root .idcr-btn-group { position: relative; display: flex; align-items: center; }
     
     #idcr-root .idcr-fab {
-      width: 100px; height: 100px; /* Kích thước mới: NHỎ HƠN (Cũ 36px) */
+      width: 100px; height: 100px;
       border-radius: 50%;
       border: 2px solid #fff;
       cursor: pointer;
@@ -46,7 +47,7 @@
       position: absolute; left: 100%; margin-left: 10px;
       background: #222; color: #fff;
       padding: 4px 8px; border-radius: 4px;
-      font-size: 11px; font-weight: 500; /* Chữ tooltip cũng nhỏ lại xíu cho cân đối */
+      font-size: 11px; font-weight: 500;
       white-space: nowrap; opacity: 0; visibility: hidden;
       transition: 0.2s; pointer-events: none;
     }
@@ -56,7 +57,7 @@
     }
     #idcr-root .idcr-btn-group:hover .idcr-tooltip { opacity: 1; visibility: visible; }
 
-    /* --- POPUP (MODAL) (ĐIỀU CHỈNH TO HƠN) --- */
+    /* --- POPUP (MODAL) --- */
     #idcr-root .idcr-overlay {
       position: fixed; inset: 0;
       background: var(--c-bg-overlay);
@@ -72,8 +73,8 @@
     #idcr-root .idcr-modal {
       background: #fff;
       width: 100%; 
-      max-width: 1200px; /* Kích thước mới: TO HƠN (Cũ 1000px) */
-      max-height: 95vh; /* Tận dụng tối đa chiều cao màn hình */
+      max-width: 1200px;
+      max-height: 95vh;
       display: flex; flex-direction: column;
       border-radius: 12px;
       box-shadow: 0 25px 50px rgba(0,0,0,0.5);
@@ -86,10 +87,17 @@
     #idcr-root .idcr-modal.theme-red    { border-top-color: var(--c-red); }
     #idcr-root .idcr-modal.theme-blue   { border-top-color: var(--c-blue); }
     #idcr-root .idcr-modal.theme-yellow { border-top-color: var(--c-yellow); }
-    #idcr-root .idcr-modal.is-blinking  { animation: idcr-blink 2s infinite; }
-    @keyframes idcr-blink { 50% { border-top-color: transparent; } }
+    
+    /* Hiệu ứng chớp tắt liên tục */
+    #idcr-root .idcr-modal.is-blinking  { animation: idcr-blink 1s infinite; }
+    
+    @keyframes idcr-blink { 
+      0% { border-top-color: inherit; box-shadow: 0 0 0 0 rgba(255,0,0,0); }
+      50% { border-top-color: transparent; box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.3); } 
+      100% { border-top-color: inherit; box-shadow: 0 0 0 0 rgba(255,0,0,0); }
+    }
 
-    /* Header */
+    /* Header & Nút ĐÃ ĐỌC */
     #idcr-root .idcr-header {
       padding: 10px 20px;
       display: flex; justify-content: flex-end;
@@ -97,27 +105,33 @@
       background: #f9f9f9;
       flex-shrink: 0;
     }
-    #idcr-root .idcr-close {
-      background: #e0e0e0; border: none;
-      font-size: 14px; font-weight: 600; color: #333;
-      cursor: pointer; padding: 6px 16px; border-radius: 20px;
+    /* Thay đổi style nút đóng thành nút xác nhận */
+    #idcr-root .idcr-read-btn {
+      background: var(--c-green-btn); 
+      border: none;
+      font-size: 16px; font-weight: 700; color: #fff;
+      cursor: pointer; padding: 10px 30px; border-radius: 4px;
       transition: 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    #idcr-root .idcr-close:hover { background: #333; color: #fff; }
+    #idcr-root .idcr-read-btn:hover { background: #1b5e20; transform: translateY(-1px); box-shadow: 0 6px 8px rgba(0,0,0,0.3); }
+    #idcr-root .idcr-read-btn:active { transform: translateY(0); }
 
-    /* Body có thanh trượt */
+    /* Body */
     #idcr-root .idcr-body {
-      padding: 35px 50px; /* Tăng padding để nội dung thoáng hơn */
+      padding: 35px 50px;
       overflow-y: auto;
       flex: 1;
-      font-size: 17px; /* Tăng cỡ chữ lên 1 chút cho dễ đọc với popup to */
+      font-size: 17px;
       color: var(--c-text);
     }
 
     /* Định dạng văn bản */
     #idcr-root .idcr-body h2 {
       margin-top: 0; margin-bottom: 25px;
-      font-size: 26px; /* Tiêu đề to hơn */
+      font-size: 26px;
       text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 12px;
     }
     #idcr-root .idcr-body h3 {
@@ -129,7 +143,6 @@
     #idcr-root .idcr-body li { margin-bottom: 8px; }
     #idcr-root .idcr-body a { color: var(--c-blue); text-decoration: underline; }
 
-    /* Scrollbar */
     #idcr-root .idcr-body::-webkit-scrollbar { width: 10px; }
     #idcr-root .idcr-body::-webkit-scrollbar-track { background: #f1f1f1; }
     #idcr-root .idcr-body::-webkit-scrollbar-thumb { background: #bdbdbd; border-radius: 5px; }
@@ -158,7 +171,7 @@
   <div class="idcr-overlay" id="idcrOverlay">
     <div class="idcr-modal" id="idcrModal">
       <div class="idcr-header">
-        <button class="idcr-close" id="idcrCloseBtn">✖ Đóng lại</button>
+        <button class="idcr-read-btn" id="idcrReadBtn">✔ TÔI ĐÃ ĐỌC & HIỂU</button>
       </div>
       <div class="idcr-body" id="idcrContent">
       </div>
@@ -169,16 +182,19 @@
 <template id="tpl-white">
     <h2 style="color: #777">⚪ HƯỚNG DẪN HỘI NHẬP CHO NHÂN VIÊN MỚI</h2>
     <h3>1️⃣ PHỤ TRÁCH ĐIỀU PHỐI KINH DOANH - PHÁT TRIỂN KINH DOANH</h3>
-    <p>Nghe podcast "GIỚI THIỆU PHẦN HỘI NHẬP". Xem kỹ Quy Định công ty trên ERP.</p>
-	 <p>Xem - nghe : Cách lên đơn hàng - Cách xử lý gọi khách hàng được giao - cách quản lý chuỗi nhà thuốc.</p>
+    <p>Nghe podcast "GIỚI THIỆU PHẦN HỘI NHẬP". - Phần podcast- video nào có nội dung danh nhân viên mới hội nhập  hãy xem qua -  Quy Định công ty trên ERP.</p>
+	<p>Nên lập cho mình kế hoạch hội nhập tìm hiểu công việc theo tuần rỏ ràng - muốn vậy có thể hỏi hay tham khảo IDECO BOT - Xem mẫu Prompt tại mục 7 trên ERP</p>
      <p>Chủ động tìm hiểu danh mục- chính sách 2 nhóm sản phẩm công ty tại: CÔNG CỤ QUẢN LÝ góc phải ERP - Menu tra cứu thuốc- DMP</p>
-	 <p>Xem và nghe: các nội dung cần thiết cho kinh doanh -  Cách báo cáo giao dịch khách hàng - cách lập kế hoạch - checklist là gì - khác nhau checklist - kế hoạch</p>
+	 <p>Xem - nghe : Cách lên đơn hàng - Cách xử lý gọi khách hàng được giao - cách quản lý chuỗi nhà thuốc.</p>
+	  <p>Xem và nghe: Cách lập kế hoạch - lỗi lập kế hoạch - Cách báo cáo giao dịch khách hàng - Các nội dung kinh doanh cần nắm, cần tránh </p>
+	 <p>Các ứng dụng căn bản: kinh doanh phải thành thảo: Ứng dụng quản lý khách hàng đặt hàng - Ứng dụng Kiểm tra giá CNT - Ứng dụng AI chạy bảng dữ lệu đơn hàng chuỗi NT</p>
+	 <p> Ứng dụng phải nắm : Cách lên đơn hàng ERP Menu đơn hàng - Báo cáo hoạt động giao dịch - Quản lý đặt hàng</p>
+	 <p>Ngoài ra tại icon "CÔNG CỤ QL" góc phải ERP: các ứng dụng: lập checklist - tra cứ giá & làm bảng chào giá  - Theo dõi công nợ.</p>
+	 <p>NÊN TẬP TƯƠNG TÁC KHÁCH HÀNG ĐÃ GIAO - KẾT HỢP CÙNG ĐỒNG NGHIỆP XỬ LÝ ĐƠN HÀNG - XEM MẪU SẢN PHẨM - ĐỌC KỸ QUY ĐỊNH KINH DOANH - NGHE THÊM PODCAST - VIDEO</p>
 	 <p>Tìm hiểu nội dung ERP chính các ứng dụng: Xem báo cáo XNT - Menu vào đơn hàng - Báo cáo kinh doanh  - Cách khai mã khách hàng - Cách xem công nợ khách hàng</p>
 	 <p>Các ứng dụng căn bản: kinh doanh phải thành thảo: Ứng dụng quản lý khách hàng đặt hàng - Ứng dụng Kiểm tra giá CNT - Ứng dụng AI chạy bảng dữ lệu đơn hàng chuỗi NT</p>
 	 <p>Ngoài ra tại icon "CÔNG CỤ QL" góc phải ERP: các ứng dụng: lập checklist - tra cứ giá & làm bảng chào giá - xem chương trình KM - Phân tích DS kỳ này...</p>
 	 <p>Lời khuyên: danh thời gian xem các nội dung kinh doanh- kỹ năng telesales - cách xử lý bán hàng - cách lập kế hoạch tuần - các điều kinh doanh cần nắm.</p>
-	
-	
 	
 	<h3>2️⃣ PHỤ TRÁCH ĐIỀU PHỐI KHO </h3>
     <p>Nghe - xem các video - podcast giới thiệu hội nhập chung cả kinh doanh - các video có liên quan đến kho -kế toán </p>
@@ -192,14 +208,12 @@
 	<p>Chủ động kiểm tra hàng hóa - phân loại trước khi khai nhập kho - xuất kho thủ tục này phải luôn nắm- hỏi tra cứu để đảm bảo GDP - SOP</p>
 	<p>Nắm cách nhập liệu phiếu nhận hàng - chạy dữ liệu nhiệt độ kho - in lưu trữ phiếu liên quan đến XNT phải tuyệt đối thực hiện.</p>
 	
-	
-	
-	
     <h3>3️⃣ PHỤ TRÁCH KẾ TOÁN  </h3>
      <p>Nghe podcast "GIỚI THIỆU PHẦN HỘI NHẬP". Xem kỹ Quy Định công ty trên ERP.</p>
 	 <p>Nghe- xem podcast- video giới thiệu về nhóm hàng - ngành hàng công ty chung.</p>
-	 <p>Danh thời gian ngoài chuyên môn kế toán cần tìm hiểu nội dung công ty để vận hành -phối hợp tốt sau này gồm:</p>
-	  <il> 
+	 <p>Kế toán mới hội nhập: Danh thời gian tìm hiểu hệ sinh thái trên ERP theo chia sẽ bên cạnh Quản lý kế toán hướng dẫn chuyên môn trên MISA</p>
+	 <p>Giai đoạn đầu: Kế toán sẽ nằm -triển khai nhiệm vụ KẾ TOÁN BÁN HÀNG - KHO - CÔNG NỢ THU  để nắm dần -tập trung định hướng này theo chỉ đạo BGĐ</p>
+	 <il> 
 	 <p>Tìm hiểu về danh mục sản phẩm mởi icon" CÔNG CỤ QL" gồm tra cứu thuốc- tra cứu DMP để tìm hiểu nhóm hàng- chính sách bán hàng liên quan đến hóa đơn bán.</p>
      <p>Tìm hiểu cách lập CHECKLIST- KẾ HOẠCH: liên quan đến tổ chức theo dõi công việc sao này tốt hơn</p>
 	 <p>Tìm hiểu các Menu chính có liên quan đến kế toán: Báo cáo tài chính- báo cáo kinh doanh- khai báo sản phẩm - đơn hàng mua -Công nợ khách hàng - Thu nợ/ Trả nợ ..</p>
@@ -238,13 +252,13 @@
     <h3>3️⃣ CHUYÊN MÔN - NGHIỆP VỤ </h3>
     <p>Đơn hàng cố gắng đóng & giao trong buổi sáng càng tốt - nhớ khai ứng dụng đúng hàng- khi giao hàng phải khai giao đủ .<br>
     Sản phẩm lỗi: Lập văn bản, hạch toán trả về đúng nghiệp vụ kế toán- SOP cần lập form ký theo để lưu theo dõi.<br>
-    Kiểm kho định kỳ: 1 tháng/lần cùng team Kế toán kho vận : kiểm cả số liệu MISA -ERP và thật tế - nghiệm thu - ký đóng biên bảng rỏ ràng.</p>
+   Hàng thuốc nhập về -Phải tuân thủ quy định SOP : phiếu giao hàng - lập ngay biên bảng - lưu chia sẽ cho bộ phận để khai trên Misa-ERP đúng quy dịnh   
+   Kiểm kho định kỳ: 1 tháng/lần cùng team Kế toán kho vận : kiểm cả số liệu MISA -ERP và thật tế - nghiệm thu - ký đóng biên bảng rỏ ràng.</p>
     
     <h3>4️⃣ LƯU Ý QUAN TRỌNG KHÁC (Bổ sung)</h3>
     <p>Khi thực hiện các nghiệp vụ trên phần mềm, cần chú ý tính chính xác của dữ liệu. Việc sai lệch số liệu giữa kho thực tế và phần mềm sẽ dẫn đến khó khăn trong việc kiểm kê cuối kỳ. Do đó, yêu cầu mọi nhân viên khi xuất nhập hàng phải cầm thiết bị và quét mã vạch ngay tại chỗ, tuyệt đối không được "nhớ mang máng" rồi nhập sau.</p>
     <p>Đối với các đơn hàng đi tỉnh, cần chụp ảnh kiện hàng trước khi giao cho đơn vị vận chuyển để làm bằng chứng xử lý khiếu nại (nếu có) sau này.</p>
-
-
+    <p>Làm việc đối nhóm: phải cùng nhau quan sát việc - kiểm tra - báo cáo- cập nhật , đặc biệt lưu ý đến khai số liệu hệ thống phần mềm</p>
 </template>
 
 <template id="tpl-blue">
@@ -269,8 +283,6 @@
         <li>Dữ liệu khai báo phiếu nhập hàng  -xuất kho thuốc phải lưu in cho khai lô hạn dùng kỹ để làm bằng chứng truy xuất - đánh giá GDP chuẩn</li>
 		<p> Quản lý SOP: điều kiện bảo quan kho - dữ liệu theo dõi - đồng bộ SOP phải định kỳ cùng nhau cuối tháng kiểm - in lưu rỏ ràng trong bộ phận</p>
 		<p> Việc kiểm kho phải được thông báo trước - phân công kiểm tra - ghi nhận - lập biên bản - lưu biên bảng cụ thể trình BGĐ và lưu ký</p>
-		
-		
     </ul>
 </template>
 
@@ -298,9 +310,6 @@
 	<p>Báo cáo nghiệp vụ kế toán nên tập trung hơn trong báo cáo cuối tháng với BGĐ vì Kết quả kinh doanh xem trên ERP dã rỏ.</p>
 	<p>Luôn cập nhật tồn kho - ngân hàng- thanh toán- khai tiền mặt giảm trên số sổ sách - Cân đối kết chuyển Tk 911</p>
 	
-	
-	
-	
     <p style="text-align: center; margin-top: 20px; font-weight: bold; color: #d32f2f;">❤️ BAN GIÁM ĐỐC CẢM ƠN ❤️</p>
 </template>
 
@@ -325,8 +334,7 @@
   const overlay = document.getElementById('idcrOverlay');
   const modal = document.getElementById('idcrModal');
   const contentBox = document.getElementById('idcrContent');
-  const closeBtn = document.getElementById('idcrCloseBtn');
-  let closeTimeout = null;
+  const readBtn = document.getElementById('idcrReadBtn'); // Nút mới
   let lastTimestamp = 0;
 
   function showPopup(type) {
@@ -335,24 +343,30 @@
     contentBox.innerHTML = tpl.innerHTML;
     modal.className = 'idcr-modal'; 
     modal.classList.add('theme-' + type);
+    
+    // Luôn luôn chớp tắt (trừ khi là white, hoặc tuỳ ý bạn)
+    // Ở đây giữ logic cũ: type != white thì chớp.
     if (type !== 'white') modal.classList.add('is-blinking');
+    
     overlay.classList.add('is-active');
-    if (closeTimeout) clearTimeout(closeTimeout);
-    closeTimeout = setTimeout(hidePopup, 60000);
+    
+    // ĐÃ XÓA: setTimeout (không tự tắt nữa)
   }
 
   function hidePopup() {
     overlay.classList.remove('is-active');
-    if (closeTimeout) clearTimeout(closeTimeout);
   }
 
-  closeBtn.addEventListener('click', hidePopup);
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) hidePopup(); });
+  // Sự kiện nút "ĐÃ ĐỌC"
+  readBtn.addEventListener('click', hidePopup);
+  
+  // ĐÃ XÓA: overlay click event (click ra ngoài không tắt)
 
   onValue(notiRef, (snapshot) => {
     const data = snapshot.val();
     if (data && data.type && data.timestamp) {
       const now = Date.now();
+      // Logic cũ: chỉ hiện nếu tin mới trong vòng 60s
       if (now - data.timestamp < 60000 && data.timestamp !== lastTimestamp) {
         console.log("Nhận thông báo mới:", data.type);
         lastTimestamp = data.timestamp;
@@ -369,3 +383,4 @@
     });
   });
 </script>
+</div>
