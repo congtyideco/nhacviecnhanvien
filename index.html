@@ -1,391 +1,417 @@
-<div id="idcr-root">
-  <style>
-    /* Reset & Cô lập hoàn toàn với web gốc */
-    #idcr-root {
-      all: initial;
-      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      z-index: 2147483647;
-    }
-    #idcr-root * { box-sizing: border-box; }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cài Đặt Thông Báo Mobile</title>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --primary-gradient: linear-gradient(135deg, #667eea, #764ba2);
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --input-border: #ddd;
+            --spacing-base: 16px;
+        }
 
-    #idcr-root {
-      --c-red: #d32f2f;
-      --c-blue: #1565c0;
-      --c-yellow: #f9a825;
-      --c-white: #ffffff;
-      --c-text: #2c3e50;
-      --c-bg-overlay: rgba(0, 0, 0, 0.85); /* Tối hơn chút để tập trung */
-      --c-green-btn: #2e7d32;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    /* --- NÚT BẤM DOCK --- */
-    #idcr-root .idcr-dock {
-      position: fixed; bottom: 10px; left: 10px;
-      display: flex; flex-direction: column-reverse; gap: 8px;
-      z-index: 2147483640;
-    }
-    #idcr-root .idcr-btn-group { position: relative; display: flex; align-items: center; }
-    
-    #idcr-root .idcr-fab {
-      width: 150px; height: 150px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    #idcr-root .idcr-fab:hover { transform: scale(1.1); }
-    #idcr-root .idcr-fab.is-white { background: var(--c-white); border-color: #ccc; }
-    #idcr-root .idcr-fab.is-red   { background: var(--c-red); }
-    #idcr-root .idcr-fab.is-blue  { background: var(--c-blue); }
-    #idcr-root .idcr-fab.is-yellow{ background: var(--c-yellow); }
+        /* Header cố định phía trên */
+        .app-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: var(--spacing-base);
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
-    /* Tooltip */
-    #idcr-root .idcr-tooltip {
-      position: absolute; left: 100%; margin-left: 10px;
-      background: #222; color: #fff;
-      padding: 4px 8px; border-radius: 4px;
-      font-size: 11px; font-weight: 500;
-      white-space: nowrap; opacity: 0; visibility: hidden;
-      transition: 0.2s; pointer-events: none;
-    }
-    #idcr-root .idcr-tooltip::before {
-      content: ""; position: absolute; right: 100%; top: 50%; transform: translateY(-50%);
-      border: 5px solid transparent; border-right-color: #222;
-    }
-    #idcr-root .idcr-btn-group:hover .idcr-tooltip { opacity: 1; visibility: visible; }
+        .app-header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
 
-    /* --- POPUP (MODAL) --- */
-    #idcr-root .idcr-overlay {
-      position: fixed; inset: 0;
-      background: var(--c-bg-overlay);
-      backdrop-filter: blur(3px);
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; visibility: hidden;
-      transition: all 0.3s ease;
-      z-index: 2147483645;
-      padding: 15px;
-    }
-    #idcr-root .idcr-overlay.is-active { opacity: 1; visibility: visible; }
+        .container {
+            padding: var(--spacing-base);
+            padding-bottom: 120px; /* Chừa chỗ cho nút lưu cố định */
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-    #idcr-root .idcr-modal {
-      background: #fff;
-      width: 100%; 
-      max-width: 1200px;
-      max-height: 95vh;
-      display: flex; flex-direction: column;
-      border-radius: 12px;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-      transform: scale(0.95); transition: transform 0.3s;
-      border-top: 8px solid #ccc;
-      overflow: hidden;
-    }
-    #idcr-root .idcr-overlay.is-active .idcr-modal { transform: scale(1); }
+        /* Style cho các khối (Card) */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: var(--spacing-base);
+            margin-bottom: var(--spacing-base);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
 
-    #idcr-root .idcr-modal.theme-red    { border-top-color: var(--c-red); }
-    #idcr-root .idcr-modal.theme-blue   { border-top-color: var(--c-blue); }
-    #idcr-root .idcr-modal.theme-yellow { border-top-color: var(--c-yellow); }
-    
-    /* Hiệu ứng chớp tắt liên tục */
-    #idcr-root .idcr-modal.is-blinking  { animation: idcr-blink 1s infinite; }
-    
-    @keyframes idcr-blink { 
-      0% { border-top-color: inherit; box-shadow: 0 0 0 0 rgba(255,0,0,0); }
-      50% { border-top-color: transparent; box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.3); } 
-      100% { border-top-color: inherit; box-shadow: 0 0 0 0 rgba(255,0,0,0); }
-    }
+        h2 {
+            font-size: 16px;
+            margin-top: 0;
+            color: #555;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
 
-    /* Header & Nút ĐÃ ĐỌC */
-    #idcr-root .idcr-header {
-      padding: 10px 20px;
-      display: flex; justify-content: flex-end;
-      border-bottom: 1px solid #eee;
-      background: #f9f9f9;
-      flex-shrink: 0;
-    }
-    /* Thay đổi style nút đóng thành nút xác nhận */
-    #idcr-root .idcr-read-btn {
-      background: var(--c-green-btn); 
-      border: none;
-      font-size: 16px; font-weight: 700; color: #fff;
-      cursor: pointer; padding: 10px 30px; border-radius: 4px;
-      transition: 0.2s;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    #idcr-root .idcr-read-btn:hover { background: #1b5e20; transform: translateY(-1px); box-shadow: 0 6px 8px rgba(0,0,0,0.3); }
-    #idcr-root .idcr-read-btn:active { transform: translateY(0); }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #444;
+        }
 
-    /* Body */
-    #idcr-root .idcr-body {
-      padding: 35px 50px;
-      overflow-y: auto;
-      flex: 1;
-      font-size: 17px;
-      color: var(--c-text);
-    }
+        /* Input và Textarea tối ưu cho ngón tay */
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px; 
+            background-color: #fafafa;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
 
-    /* Định dạng văn bản */
-    #idcr-root .idcr-body h2 {
-      margin-top: 0; margin-bottom: 25px;
-      font-size: 26px;
-      text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 12px;
-    }
-    #idcr-root .idcr-body h3 {
-      font-size: 19px; color: #444; margin-top: 30px; margin-bottom: 12px;
-      font-weight: 700; background: #f0f2f5; padding: 8px 12px; border-radius: 4px; display: inline-block;
-    }
-    #idcr-root .idcr-body p { margin-bottom: 18px; text-align: justify; }
-    #idcr-root .idcr-body ul { padding-left: 25px; margin-bottom: 18px; }
-    #idcr-root .idcr-body li { margin-bottom: 8px; }
-    #idcr-root .idcr-body a { color: var(--c-blue); text-decoration: underline; }
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+        }
 
-    #idcr-root .idcr-body::-webkit-scrollbar { width: 10px; }
-    #idcr-root .idcr-body::-webkit-scrollbar-track { background: #f1f1f1; }
-    #idcr-root .idcr-body::-webkit-scrollbar-thumb { background: #bdbdbd; border-radius: 5px; }
-    #idcr-root .idcr-body::-webkit-scrollbar-thumb:hover { background: #9e9e9e; }
-  </style>
+        /* Tùy chỉnh riêng cho Textarea để hỗ trợ kéo thả */
+        .textarea-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
 
-  <div class="idcr-dock">
-    <div class="idcr-btn-group">
-      <button class="idcr-fab is-white" data-type="white"></button>
-      <span class="idcr-tooltip">Thông báo chung</span>
+        textarea {
+            height: 120px; /* Chiều cao mặc định */
+            min-height: 80px;
+            resize: vertical; /* Hỗ trợ resize cho PC */
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom: none;
+        }
+
+        /* Thanh kéo (Resize Handle) dành cho Mobile */
+        .resize-handle {
+            height: 24px;
+            background-color: #e9ecef;
+            border: 1px solid var(--input-border);
+            border-top: 1px solid #ddd;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: ns-resize; /* Con trỏ chuột hình mũi tên 2 chiều */
+            touch-action: none; /* Ngăn cuộn trang khi đang kéo thanh này */
+            color: #888;
+        }
+        
+        /* Biểu tượng 3 dấu gạch ngang trên thanh kéo */
+        .resize-handle::after {
+            content: "";
+            width: 40px;
+            height: 4px;
+            border-top: 2px solid #bbb;
+            border-bottom: 2px solid #bbb;
+        }
+
+        .note {
+            font-size: 13px;
+            color: #666;
+            background: #eef2ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        /* Grid hiển thị ngày */
+        .day-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .day-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .day-name {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .day-id {
+            font-size: 12px;
+            color: #999;
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Thanh trạng thái và nút bấm cố định phía dưới (Sticky Footer) */
+        .sticky-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
+        }
+
+        button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        #status {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .loading { color: #666; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+
+        @media (min-width: 600px) {
+            .schedule-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <h1>Cấu Hình Thông Báo</h1>
+    </header>
+
+    <div class="container">
+        
+        <div class="card">
+            <label for="message-input">Nội dung Popup:</label>
+            
+            <div class="textarea-wrapper">
+                <textarea id="message-input" placeholder="Nhập lời nhắn..."></textarea>
+                <div id="resize-handle" class="resize-handle" title="Kéo để chỉnh kích thước"></div>
+            </div>
+            
+        </div>
+
+        <div class="card">
+            <h2>Lập Lịch (HH:mm)</h2>
+            <div class="note">
+                Dùng dấu phẩy phân cách.<br>
+                VD: <b>09:00, 14:30</b>
+            </div>
+
+            <div class="schedule-grid">
+                <div class="day-group"><div class="day-label"><span class="day-name">Thứ Hai</span><span class="day-id">T2</span></div><input type="text" id="day-1" placeholder="Trống hoặc 09:00, 14:00"></div>
+                <div class="day-group"><div class="day-label"><span class="day-name">Thứ Ba</span><span class="day-id">T3</span></div><input type="text" id="day-2" placeholder="Trống hoặc 09:00, 14:00"></div>
+                <div class="day-group"><div class="day-label"><span class="day-name">Thứ Tư</span><span class="day-id">T4</span></div><input type="text" id="day-3" placeholder="Trống hoặc 09:00, 14:00"></div>
+                <div class="day-group"><div class="day-label"><span class="day-name">Thứ Năm</span><span class="day-id">T5</span></div><input type="text" id="day-4" placeholder="Trống hoặc 09:00, 14:00"></div>
+                <div class="day-group"><div class="day-label"><span class="day-name">Thứ Sáu</span><span class="day-id">T6</span></div><input type="text" id="day-5" placeholder="Trống hoặc 09:00, 14:00"></div>
+                <div class="day-group"><div class="day-label"><span class="day-name">Thứ Bảy</span><span class="day-id">T7</span></div><input type="text" id="day-6" placeholder="Trống hoặc 09:00, 14:00"></div>
+                <div class="day-group"><div class="day-label"><span class="day-name">Chủ Nhật</span><span class="day-id">CN</span></div><input type="text" id="day-0" placeholder="Trống hoặc 09:00, 14:00"></div>
+            </div>
+        </div>
     </div>
-    <div class="idcr-btn-group">
-      <button class="idcr-fab is-red" data-type="red"></button>
-      <span class="idcr-tooltip">QUAN TRỌNG - KHẨN</span>
+
+    <div class="sticky-footer">
+        <div id="status" class="loading">Đang kết nối...</div>
+        <button id="save-button">LƯU CẤU HÌNH</button>
     </div>
-    <div class="idcr-btn-group">
-      <button class="idcr-fab is-blue" data-type="blue"></button>
-      <span class="idcr-tooltip">Nhắc việc thông tin</span>
-    </div>
-    <div class="idcr-btn-group">
-      <button class="idcr-fab is-yellow" data-type="yellow"></button>
-      <span class="idcr-tooltip">Lời khuyên / Lưu ý</span>
-    </div>
-  </div>
 
-  <div class="idcr-overlay" id="idcrOverlay">
-    <div class="idcr-modal" id="idcrModal">
-      <div class="idcr-header">
-        <button class="idcr-read-btn" id="idcrReadBtn">✔ TÔI ĐÃ ĐỌC & HIỂU</button>
-      </div>
-      <div class="idcr-body" id="idcrContent">
-      </div>
-    </div>
-  </div>
-</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-<template id="tpl-white">
-    <h2 style="color: #777">⚪ HƯỚNG DẪN HỘI NHẬP CHO NHÂN VIÊN MỚI</h2>
-    <h3>1️⃣ PHỤ TRÁCH ĐIỀU PHỐI KINH DOANH - PHÁT TRIỂN KINH DOANH</h3>
-    <p>Nghe podcast "GIỚI THIỆU PHẦN HỘI NHẬP". - Phần podcast- video nào có nội dung danh nhân viên mới hội nhập  hãy xem qua -  Quy Định công ty trên ERP.</p>
-	<p>Nên lập cho mình kế hoạch hội nhập tìm hiểu công việc theo tuần rỏ ràng - muốn vậy có thể hỏi hay tham khảo IDECO BOT - Xem mẫu Prompt tại mục 7 trên ERP</p>
-     <p>Chủ động tìm hiểu danh mục- chính sách 2 nhóm sản phẩm công ty tại: CÔNG CỤ QUẢN LÝ góc phải ERP - Menu tra cứu thuốc- DMP</p>
-	 <p>Xem - nghe : Cách lên đơn hàng - Cách xử lý gọi khách hàng được giao - cách quản lý chuỗi nhà thuốc.</p>
-	  <p>Xem và nghe: Cách lập kế hoạch - lỗi lập kế hoạch - Cách báo cáo giao dịch khách hàng - Các nội dung kinh doanh cần nắm, cần tránh </p>
-	 <p>Các ứng dụng căn bản: kinh doanh phải thành thảo: Ứng dụng quản lý khách hàng đặt hàng - Ứng dụng Kiểm tra giá CNT - Ứng dụng AI chạy bảng dữ lệu đơn hàng chuỗi NT</p>
-	 <p> Ứng dụng phải nắm : Cách lên đơn hàng ERP Menu đơn hàng - Báo cáo hoạt động giao dịch - Quản lý đặt hàng</p>
-	 <p>Ngoài ra tại icon "CÔNG CỤ QL" góc phải ERP: các ứng dụng: lập checklist - tra cứ giá & làm bảng chào giá  - Theo dõi công nợ.</p>
-	 <p>NÊN TẬP TƯƠNG TÁC KHÁCH HÀNG ĐÃ GIAO - KẾT HỢP CÙNG ĐỒNG NGHIỆP XỬ LÝ ĐƠN HÀNG - XEM MẪU SẢN PHẨM - ĐỌC KỸ QUY ĐỊNH KINH DOANH - NGHE THÊM PODCAST - VIDEO</p>
-	 <p>Tìm hiểu nội dung ERP chính các ứng dụng: Xem báo cáo XNT - Menu vào đơn hàng - Báo cáo kinh doanh  - Cách khai mã khách hàng - Cách xem công nợ khách hàng</p>
-	 <p>Các ứng dụng căn bản: kinh doanh phải thành thảo: Ứng dụng quản lý khách hàng đặt hàng - Ứng dụng Kiểm tra giá CNT - Ứng dụng AI chạy bảng dữ lệu đơn hàng chuỗi NT</p>
-	 <p>Ngoài ra tại icon "CÔNG CỤ QL" góc phải ERP: các ứng dụng: lập checklist - tra cứ giá & làm bảng chào giá - xem chương trình KM - Phân tích DS kỳ này...</p>
-	 <p>Lời khuyên: danh thời gian xem các nội dung kinh doanh- kỹ năng telesales - cách xử lý bán hàng - cách lập kế hoạch tuần - các điều kinh doanh cần nắm.</p>
-	
-	<h3>2️⃣ PHỤ TRÁCH ĐIỀU PHỐI KHO </h3>
-    <p>Nghe - xem các video - podcast giới thiệu hội nhập chung cả kinh doanh - các video có liên quan đến kho -kế toán </p>
-	 <p>Tìm hiểu công cụ quản lý công việc và triển khai: Lập checklist - lập kế hoạch - Xem video - podcast hướng dẫn</p>
-	<p>Nghe podcast GDP là gì -Mô tả công việc SOP là gì - Xem kỹ Quy định công ty trong đó phần nội dung quy định kho - phân quyền kho.</p>
-	<p>Phụ trách kho cần phải nắm rỏ: Danh mục thuốc bán- danh mục dược mỹ phẩm - chính sách bán để quản lý phối hợp hàng hóa đúng sao này.</p>
-	<p>Phần mềm ERO phải nắm ro các ứng dụng liên quan kho: Báo cáo XNT- TK phiếu xuất nhập - Menu Nhà kho ( xuất - nhập - nhập kho khách hàng - kiểm kho)</p>
-	<p>Ứng dụng AI trích xuất phiếu nhận - lập - Ứng dụng đóng gói - giao hàng - Ứng dụng kiểm tra lô date theo ảnh : phải hỏi tìm hiểu cách vận hành thông thạo</p>
-	<p>Thành viên phụ trách kho giao nhận: phải hỏi nắm cách khai nhãn giao nhận các đơn vị vận chuyển - Nhất Tín- Viettel- Đơn vị khác thông thạo- nên hỏi nắm</p>
-	<p>Thành viên phụ trách kho giao nhận: phải xem tài liệu SOP- quy định quản lý kho dược - nắm khê khai phiếu nhập xuất kho theo thuốc quy định</p>
-	<p>Chủ động kiểm tra hàng hóa - phân loại trước khi khai nhập kho - xuất kho thủ tục này phải luôn nắm- hỏi tra cứu để đảm bảo GDP - SOP</p>
-	<p>Nắm cách nhập liệu phiếu nhận hàng - chạy dữ liệu nhiệt độ kho - in lưu trữ phiếu liên quan đến XNT phải tuyệt đối thực hiện.</p>
-	
-    <h3>3️⃣ PHỤ TRÁCH KẾ TOÁN  </h3>
-     <p>Nghe podcast "GIỚI THIỆU PHẦN HỘI NHẬP". Xem kỹ Quy Định công ty trên ERP.</p>
-	 <p>Nghe- xem podcast- video giới thiệu về nhóm hàng - ngành hàng công ty chung.</p>
-	 <p>Kế toán mới hội nhập: Danh thời gian tìm hiểu hệ sinh thái trên ERP theo chia sẽ bên cạnh Quản lý kế toán hướng dẫn chuyên môn trên MISA</p>
-	 <p>Giai đoạn đầu: Kế toán sẽ nằm -triển khai nhiệm vụ KẾ TOÁN BÁN HÀNG - KHO - CÔNG NỢ THU  để nắm dần -tập trung định hướng này theo chỉ đạo BGĐ</p>
-	 <il> 
-	 <p>Tìm hiểu về danh mục sản phẩm mởi icon" CÔNG CỤ QL" gồm tra cứu thuốc- tra cứu DMP để tìm hiểu nhóm hàng- chính sách bán hàng liên quan đến hóa đơn bán.</p>
-     <p>Tìm hiểu cách lập CHECKLIST- KẾ HOẠCH: liên quan đến tổ chức theo dõi công việc sao này tốt hơn</p>
-	 <p>Tìm hiểu các Menu chính có liên quan đến kế toán: Báo cáo tài chính- báo cáo kinh doanh- khai báo sản phẩm - đơn hàng mua -Công nợ khách hàng - Thu nợ/ Trả nợ ..</p>
-	 <p>Tiếp tục trên Menu chính ERP: Phiếu thu- phiếu chi - Tạm ứng ( hỏi cấp trên cách vào - xem - lập - xác nhận- duyệt cho kỹ vì liên quan đến kê khai hệ thống.</p>
-	 <p>Tìm hiểu các công cụ ứng dụng AI liên quan đến kế toán: Bộ phận pháp chế AI - Phân tích kế toán- IDECO BOT là những công cụ hỗ trợ nghiệp vụ kế toán khi cần.</p>
-	 <p>Chủ động lập kế hoạch trong tuần các nội dung tìm hiểu- trình bày kế hoạch cho cấp quản để hướng dẫn cách tìm hiểu tốt hơn </p>
-	 </il> 
-	 <p>Phân nghiệp vụ chuyên môn: cần tìm hiểu video- podcast về kế toán trên ERP - kết hợp nên xem thêm ở nhà.</p>
-	  <p>Tìm hiểu về danh mục sản phẩm mởi icon" CÔNG CỤ QL" gồm tra cứu thuốc- tra cứu DMP để tìm hiểu nhóm hàng- chính sách bán hàng liên quan đến hóa đơn bán.</p>
-	 <il>
-	 <p>Phần Misa khai báo- cấp quản lý chia sẽ trực tiếp: cần nắm hiểu cách khai hàng hóa theo mã thống nhất trên 2 phần mềm MISA-ERP </p>
-	 <p>Xem- nghe phần chia sẽ quy định - quy trình kế toán -kho vận - kế toán bán hàng- kế toán mua hàng và các nội dung liên quan đến kế toán</p>
-	 <p>CHỦ ĐỘNG TƯƠNG TÁC VỚI CÁC THÀNH VIÊN CÔNG TY - XỬ LÝ TÌNH HUỐNG THỰC TẾ- NẮM - HỎI VÀ TRA CỨU NHANH</p>
-	 <il>
-	
-	<p>Link cài đặt: <a href="https://congtyideco.github.io/mobile" target="_blank">congtyideco.github.io/mobile</a></p>
-</template>
+        // --- CODE XỬ LÝ KÉO GIÃN TEXTAREA (MỚI THÊM) ---
+        const textarea = document.getElementById('message-input');
+        const resizeHandle = document.getElementById('resize-handle');
+        let isResizing = false;
+        let lastDownY = 0;
 
-<template id="tpl-red">
-    <h2 style="color: #d32f2f">🔴 NỘI DUNG CÔNG VIỆC CHUNG</h2>
-    
-    
-    <h3>1️⃣ THEO DÕI CÔNG VIỆC CHUNG </h3>
-    <p>Các em nhớ định kỳ xem lại Định Hướng Tháng- Giao việc Tuần- KPI để điều chỉnh mục tiêu - việc hoàn thành nhé</p>
-	<p>Theo dõi cập nhật lại CHECKLIST -KẾ HOẠCH nếu phát sinh - chủ động kiểm tra tổng quá lại nhiệm vụ việc giao - nhắc nhở nhau - đôn đốc việc hoàn thành</p>
-    <p>Kinh doanh: các bạn nên khẩn trương hơn trong gọi - tương tác để có đơn là ưu tiên - tận dụng sản phẩm mới - CTKM là thông diệp trao đổi khi tương tác.</p>
-    <p>Kế toán sẽ phát sinh nhiều việc nhập -xuất chứng từ khai nên thường xuyên kiểm tra CHECKLIST - họp nội bộ để rà soát chung tiến đội -dealine hoàn thành</p>
-	 <p>Kho - giao nhận: kiểm đếm thật kỹ- phân chia thành viên kiểm tra chèo xuất - nhập - chú ý khai thủ thục SOP đúng , khẩn trương đóng hàng - giao hàng nhanh</p>
-	
-	<h3>2️⃣ CÁCH TRIỂN KHAI ĐỊNH HƯỚNG THÁNG - TUẦN CÙNG NHAU  </h3>
-    <ul>
-        <li>Xem lại định hướng MỤC TIÊU THÁNG - vào checklist khai nội dung chủ đạo chính - thiết lập công việc theo mục tiêu tuần cho tiêu đề checklist để đạt mục tiêu</li>
-        <li>KPI và việc giao Tuần: cũng nắm và khai ngay trong CHECKLIST- Kế toán tuần nội dung phấn đầu hoàn thành - để theo dõi sát</li>
-        <li>Giữ tuần - hay cuối tuần: nên kiểm tra lại công việc trong tuần định kỳ ít nhất 1 lần: CHECKLIST- KẾ HOẠCH xem cần bổ sung hay chỉnh sửa hay bấm hoàn thành </li>
-    </ul>
+        // Xử lý sự kiện chuột (Desktop)
+        resizeHandle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            lastDownY = e.clientY;
+            document.body.style.cursor = 'ns-resize'; // Đổi con trỏ chuột toàn trang
+            e.preventDefault(); // Ngăn chọn văn bản
+        });
 
-    <h3>3️⃣ CHUYÊN MÔN - NGHIỆP VỤ </h3>
-    <ul>
-	<li> Đơn hàng cố gắng đóng & giao trong buổi sáng càng tốt - nhớ khai ứng dụng đúng hàng- khi giao hàng phải khai giao đủ .</li>
-    <li>Sản phẩm lỗi: Lập văn bản, hạch toán trả về đúng nghiệp vụ kế toán- SOP cần lập form ký theo để lưu theo dõi.</li>
-   <li> Hàng thuốc nhập về -Phải tuân thủ quy định SOP : phiếu giao hàng - lập ngay biên bảng - lưu chia sẽ cho bộ phận để khai trên Misa-ERP đúng quy dịnh </il>  
-   <li> Kiểm kho định kỳ: 1 tháng/lần cùng team Kế toán kho vận : kiểm cả số liệu MISA -ERP và thật tế - nghiệm thu - ký đóng biên bảng rỏ ràng.</li>
-   <li> Khai nghiệp vụ kế toán: Thu- Chi -Tạm ứng -Phân bổ trên ERP phải phân chia bấm xác nhận - duyệt chứng từ lại rỏ ràng để quản lý - đối soát trên ERP - Misa</il>
-   <li> Phải duy trì họp đánh giá công việc giao bộ phận định kỳ: trao đổi - xử lý đúng -cập nhật báo cáo đến Lãnh đạo trong cuộc họp tuần- tháng<il>
- </ul>
-    
-    <h3>4️⃣ LƯU Ý QUAN TRỌNG KHÁC (Bổ sung)</h3>
-    <p>Khi thực hiện các nghiệp vụ trên phần mềm, cần chú ý tính chính xác của dữ liệu. Việc sai lệch số liệu giữa kho thực tế và phần mềm sẽ dẫn đến khó khăn trong việc kiểm kê cuối kỳ. Do đó, yêu cầu mọi nhân viên khi xuất nhập hàng phải cầm thiết bị và quét mã vạch ngay tại chỗ, tuyệt đối không được "nhớ mang máng" rồi nhập sau.</p>
-    <p>Đối với các ĐI TỈNH - GIAO KHÁCH HÀNG LỚN: LC-PMC , cần chụp ảnh kiện hàng trước khi giao cho đơn vị vận chuyển để làm bằng chứng xử lý khiếu nại (nếu có) sau này.</p>
-    <p>Làm việc đối nhóm: phải cùng nhau quan sát việc - kiểm tra - báo cáo- cập nhật , đặc biệt lưu ý đến khai số liệu hệ thống phần mềm</p>
-</template>
+        // Xử lý sự kiện cảm ứng (Mobile)
+        resizeHandle.addEventListener('touchstart', (e) => {
+            isResizing = true;
+            lastDownY = e.touches[0].clientY;
+            e.preventDefault(); // Ngăn cuộn trang
+        }, { passive: false });
 
-<template id="tpl-blue">
-    <h2 style="color: #1565c0">🔵 KINH DOANH -KHO VẬN </h2>
-    <h3>1️⃣ KHÁCH HÀNG MỚI</h3>
-    <p>Do khách hàng luôn phát sinh từ chối- luôn trì hoãn mà Doanh thu chúng ta phải cần chốt trong tuần- cuối tháng nên:</p>
-    <p>Kế hoạch lập nên đề ra mục tiêu mở khách hàng mới mỗi ngày - tuần và khai báo Báo cáo giao dịch rỏ ràng, cập nhật rỏ - theo dõi lịch hẹn sát sao</p>
-    <p>Ngoài báo cáo từ ứng dụng tra cứu Thuốc- DMP thì còn có báo giá bẳng ảnh poster  trên CÔNG CỤ QUẢN LÝ  menu gần cuối để áp dụng</p>
-    <p>Khi khai thác khách hàng mới: nên xem lại ĐỊNH HƯỚNG KHU VỰC - KPI  để xúc tiến - cần thiết xem- nghe PODCAST-Video nói về kỹ năng- cách chốt Sales thêm</p>
+        // Hàm chung xử lý kéo
+        const handleMove = (clientY) => {
+            if (!isResizing) return;
+            const offset = clientY - lastDownY;
+            const newHeight = textarea.offsetHeight + offset;
+            
+            // Giới hạn chiều cao tối thiểu là 60px
+            if (newHeight > 60) {
+                textarea.style.height = newHeight + 'px';
+                lastDownY = clientY;
+            }
+        };
 
-   <h3>2️⃣ KHÁCH HÀNG HIỆN TẠI ĐANG HỢP TÁC - ĐÃ GIAO</h3>
-    <p>luôn quản lý ỨNG DỤNG KHÁCH HÀNG đặt hàng, khai báo - theo dõi sát để phủ kính khách hàng lên đơn - ERP luôn thông báo tự động nhắc nên xem kỹ.</p>
-    <p>Hãy xem video-podcast chia sẽ cách trao đổi khách hàng đang hợp tác thêm : Nêu chuẩn bị thông tin chào mời, danh mục, sản phẩm giới thiệu thêm mở rộng.</p>
-    <p>Trước khi lên đơn nên phối hợp kho vận - kiểm tra hàng hóa trong kho - thuốc kỹ để báo cho khách hàng - tách đơn giao sản phẩm có sẵn kho - tránh để chờ sẽ mất đơn.</p>
-	<p>Việc lên đơn hàng thuốc - không phải thuốc - tiền mặt - thu hộ - thiết lập nợ phải kỹ càng - chọn tick tránh sai sót - xem lại trước khi xuất giao</p>
-	<p>Phụ trách đơn chuỗi NT lớn phải kiểm tra giá -hóa đơn thông qua ứng dụng AI của công ty - đặc biệt cho Chuỗi PMC nhóm UVS phải chọn chiết khấu báo cáo ngoài chiết khấu thương mại 40%</p>
-	
-    <h3>3️⃣ KHO VẬN </h3>
-    <ul>
-        <li>Kiểm tra Lô - Hạn dùng trên mọi chứng từ nhập kho -khai báo phần mềm -đổi chiếu ERP tồn kho cuối kỳ để chỉnh sửa nếu sai sót.</li>
-        <li>Khai báo App ĐÓNG HÀNG - GIAO NHẬN phân công khai báo đủ -kiểm tra cuối kỳ lại .</li>
-        <li>Dữ liệu khai báo phiếu nhập hàng  -xuất kho thuốc phải lưu in cho khai lô hạn dùng kỹ để làm bằng chứng truy xuất - đánh giá GDP chuẩn</li>
-		<p> Quản lý SOP: điều kiện bảo quan kho - dữ liệu theo dõi - đồng bộ SOP phải định kỳ cùng nhau cuối tháng kiểm - in lưu rỏ ràng trong bộ phận</p>
-		<p> Việc kiểm kho phải được thông báo trước - phân công kiểm tra - ghi nhận - lập biên bản - lưu biên bảng cụ thể trình BGĐ và lưu ký</p>
-    </ul>
-</template>
+        // Hàm chung khi thả tay
+        const handleUp = () => {
+            isResizing = false;
+            document.body.style.cursor = 'default';
+        };
 
-<template id="tpl-yellow">
-    <h2 style="color: #f9a825">🟡 KẾ TOÁN - TÀI CHÍNH</h2>
-    <h3>1️⃣ NGHIỆP VỤ</h3>
-    <p>Xem Checklist, bổ sung ngay nếu có phát sinh. Khai báo đồng bộ MISA-ERP.</p>
-    <p>Quản lý chặt chẽ LÔ- HẠN DỤNG trong nhập chứng từ : xuất hóa đơn phải đối chiếu lại trước khi gởi cho khách hàng cẩn thận.</p>
-    <p>Điều phối- chỉ đạo công việc kho nhập liệu Phiếu nhập- biên bản nhập thuốc phải đúng- đủ mọi phát sinh trong ngày và luôn kiểm tra lại,</p>
-	<p>Luôn kiểm tra lại chứng từ MUA- BÁN thuốc phải kiểm tra LÔ - HẠN cẩn thận trước khi phát hành- hay nhập liệu của MISA- ỨNG DỤNG KHO.</p>
-    
-	<h3>2️⃣  KHAI BÁO MISA- KHO- ERP</h3>
-    <p>Hoạt động thu chi phải yêu cầu mọi nhân viên phải làm ĐỀ XUẤT - Kèm chứng từ- lưu cẩn thận - in lưu khi cần,</p>
-    <p>Luôn kiểm tra email kế toán để kiểm tra hóa đơn nhà cung cấp - phân loại cho dúng khai báo cáo Misa - ERP đồng thời, tránh quên, sót,</p>
-    <p>Luôn kiểm tra đối chiếu số liệu khai trên MISA - ERP phải đồng bộ, đặc biệt tồn kho hàng hóa phát sinh phải tương đối khớp / kỳ,</p>
-	 <p>Định kỳ nên nêu lên họp nhóm KẾ TOÁN- KHO VẬN: kiểm tra công việc thành viên- báo cáo- xử lý- tổng hợp để phát hiện sai sót nếu do hay điểm lại việc giao hoàn thành</p>
-   
-   <h3>3️⃣ QUẢN LÝ DÒNG - TIỀN- THU CHI - TIỀN MẶT</h3>
-    <p>Cần tổ chức quản lý bảng cashflow rỏ ràng- theo dõi chi khai tiền mặt - thu chi - tài khoản .</p>
-	<p>Cân đối khoản thu - với khoản chi hợp lý: luôn bảo vệ thanh khoản công ty tối ưu - hay trình bào khi có nội dung cần.</p>
-	<p>Báo cáo Thuế- nghiệp vụ trên Misa là nội dung cần trình bày cuối tháng trong kỳ báo cáo ngoà</p>
+        // Lắng nghe sự kiện di chuyển và thả tay trên toàn document
+        document.addEventListener('mousemove', (e) => handleMove(e.clientY));
+        document.addEventListener('mouseup', handleUp);
+        
+        document.addEventListener('touchmove', (e) => {
+            if(isResizing) handleMove(e.touches[0].clientY);
+        }, { passive: false });
+        document.addEventListener('touchend', handleUp);
+        // --- KẾT THÚC CODE XỬ LÝ KÉO GIÃN ---
 
-	 <h3>3️⃣ BÁO CÁO CUỐI KỲ- NGHIỆP VỤ </h3>
-    <p>Ra soát lại việc nhập liệu - chứng từ - số liệu mua - bán - kho dần từ ngày 25 cuối tháng để đối soát dần</p>
-	<p>Báo cáo nghiệp vụ kế toán nên tập trung hơn trong báo cáo cuối tháng với BGĐ vì Kết quả kinh doanh xem trên ERP dã rỏ.</p>
-	<p>Luôn cập nhật tồn kho - ngân hàng- thanh toán- khai tiền mặt giảm trên số sổ sách - Cân đối kết chuyển Tk 911</p>
-	
-    <p style="text-align: center; margin-top: 20px; font-weight: bold; color: #d32f2f;">❤️ BAN GIÁM ĐỐC CẢM ƠN ❤️</p>
-</template>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // --- CODE FIREBASE (GIỮ NGUYÊN) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaEzd8OMJ553ETba-M_pxWSe2bDX9fh_I", 
+            authDomain: "ideco-f82d4.firebaseapp.com",
+            databaseURL: "https://ideco-f82d4-default-rtdb.firebaseio.com",
+            projectId: "ideco-f82d4",
+            storageBucket: "ideco-f82d4.appspot.com",
+            messagingSenderId: "614324382815",
+            appId: "1:614324382815:web:234ed4873b7156d80fffea"
+        };
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA_fToIYgemRb8IiG_w6PKzT1hWsMHmCAU",
-    authDomain: "nhacviec-60be5.firebaseapp.com",
-    projectId: "nhacviec-60be5",
-    storageBucket: "nhacviec-60be5.firebasestorage.app",
-    messagingSenderId: "229663309740",
-    appId: "1:229663309740:web:045944f1c47316fcbc8409",
-    measurementId: "G-Y59LY8TTK5"
-  };
+        const app = initializeApp(firebaseConfig, 'ThongBaoAdminMobileResize'); 
+        const database = getDatabase(app);
+        const scheduleRef = ref(database, 'scheduleConfig');
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const notiRef = ref(db, 'ideco_global_notify/current_trigger');
+        const messageInput = document.getElementById('message-input');
+        const saveButton = document.getElementById('save-button');
+        const statusDiv = document.getElementById('status');
+        
+        const dayInputs = {
+            0: document.getElementById('day-0'),
+            1: document.getElementById('day-1'),
+            2: document.getElementById('day-2'),
+            3: document.getElementById('day-3'),
+            4: document.getElementById('day-4'),
+            5: document.getElementById('day-5'),
+            6: document.getElementById('day-6')
+        };
 
-  const overlay = document.getElementById('idcrOverlay');
-  const modal = document.getElementById('idcrModal');
-  const contentBox = document.getElementById('idcrContent');
-  const readBtn = document.getElementById('idcrReadBtn'); // Nút mới
-  let lastTimestamp = 0;
+        onValue(scheduleRef, (snapshot) => {
+            const config = snapshot.val();
+            console.log("Đã tải cấu hình:", config);
+            
+            if (config) {
+                messageInput.value = config.message || '';
+                if (config.schedule) {
+                    for (let dayKey in dayInputs) {
+                        const timesArray = config.schedule[dayKey] || [];
+                        dayInputs[dayKey].value = timesArray.join(', ');
+                    }
+                }
+            }
+            
+            statusDiv.textContent = 'Đã tải xong.';
+            statusDiv.className = 'success';
+        }, (error) => {
+            console.error("Lỗi tải Firebase:", error);
+            statusDiv.textContent = 'Lỗi kết nối!';
+            statusDiv.className = 'error';
+        });
 
-  function showPopup(type) {
-    const tpl = document.getElementById('tpl-' + type);
-    if (!tpl) return;
-    contentBox.innerHTML = tpl.innerHTML;
-    modal.className = 'idcr-modal'; 
-    modal.classList.add('theme-' + type);
-    
-    // Luôn luôn chớp tắt (trừ khi là white, hoặc tuỳ ý bạn)
-    // Ở đây giữ logic cũ: type != white thì chớp.
-    if (type !== 'white') modal.classList.add('is-blinking');
-    
-    overlay.classList.add('is-active');
-    
-    // ĐÃ XÓA: setTimeout (không tự tắt nữa)
-  }
+        saveButton.addEventListener('click', () => {
+            saveButton.textContent = 'ĐANG LƯU...';
+            saveButton.disabled = true;
+            statusDiv.textContent = 'Đang xử lý dữ liệu...';
+            statusDiv.className = 'loading';
 
-  function hidePopup() {
-    overlay.classList.remove('is-active');
-  }
+            const newConfig = {
+                message: messageInput.value,
+                schedule: {} 
+            };
 
-  // Sự kiện nút "ĐÃ ĐỌC"
-  readBtn.addEventListener('click', hidePopup);
-  
-  // ĐÃ XÓA: overlay click event (click ra ngoài không tắt)
+            for (let dayKey in dayInputs) {
+                const inputString = dayInputs[dayKey].value; 
+                const timesArray = inputString
+                    .split(',') 
+                    .map(time => time.trim()) 
+                    .filter(time => time.length > 0); 
 
-  onValue(notiRef, (snapshot) => {
-    const data = snapshot.val();
-    if (data && data.type && data.timestamp) {
-      const now = Date.now();
-      // Logic cũ: chỉ hiện nếu tin mới trong vòng 60s
-      if (now - data.timestamp < 60000 && data.timestamp !== lastTimestamp) {
-        console.log("Nhận thông báo mới:", data.type);
-        lastTimestamp = data.timestamp;
-        showPopup(data.type);
-      }
-    }
-  });
+                if (timesArray.length > 0) {
+                    newConfig.schedule[dayKey] = timesArray;
+                }
+            }
 
-  document.querySelectorAll('.idcr-fab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const type = btn.getAttribute('data-type');
-      set(notiRef, { type: type, timestamp: Date.now(), sender: 'web_client' })
-        .catch(err => console.error(err));
-    });
-  });
-</script>
-</div>
+            console.log("Đang lưu cấu hình MỚI:", newConfig);
+
+            set(scheduleRef, newConfig)
+                .then(() => {
+                    statusDiv.textContent = 'Đã cập nhật thành công!';
+                    statusDiv.className = 'success';
+                    setTimeout(() => {
+                        saveButton.textContent = 'LƯU CẤU HÌNH';
+                        saveButton.disabled = false;
+                    }, 1000);
+                })
+                .catch((error) => {
+                    statusDiv.textContent = 'Lỗi: ' + error.message;
+                    statusDiv.className = 'error';
+                    saveButton.textContent = 'THỬ LẠI';
+                    saveButton.disabled = false;
+                });
+        });
+
+    </script>
+</body>
+</html>
