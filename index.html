@@ -120,35 +120,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: ns-resize; 
-            touch-action: none; 
+            cursor: ns-resize; /* Con trỏ chuột hình mũi tên 2 chiều */
+            touch-action: none; /* Ngăn cuộn trang khi đang kéo thanh này */
             color: #888;
         }
         
+        /* Biểu tượng 3 dấu gạch ngang trên thanh kéo */
         .resize-handle::after {
             content: "";
             width: 40px;
             height: 4px;
             border-top: 2px solid #bbb;
             border-bottom: 2px solid #bbb;
-        }
-
-        /* Nút Xóa Mới Thêm */
-        .btn-clear {
-            margin-top: 10px;
-            background-color: #fff0f0;
-            color: #d63031;
-            border: 1px solid #fab1a0;
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            width: auto;
-            display: inline-block;
-        }
-        .btn-clear:active {
-            background-color: #ffcccc;
         }
 
         .note {
@@ -202,7 +185,7 @@
             gap: 10px;
         }
 
-        .btn-save {
+        button {
             width: 100%;
             padding: 14px;
             background: var(--primary-gradient);
@@ -215,7 +198,7 @@
             box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
         }
 
-        .btn-save:active {
+        button:active {
             transform: scale(0.98);
             opacity: 0.9;
         }
@@ -254,8 +237,6 @@
                 <textarea id="message-input" placeholder="Nhập lời nhắn..."></textarea>
                 <div id="resize-handle" class="resize-handle" title="Kéo để chỉnh kích thước"></div>
             </div>
-
-            <button id="clear-button" class="btn-clear">🗑️ Xóa nội dung để viết lại</button>
             
         </div>
 
@@ -280,58 +261,54 @@
 
     <div class="sticky-footer">
         <div id="status" class="loading">Đang kết nối...</div>
-        <button id="save-button" class="btn-save">LƯU CẤU HÌNH</button>
+        <button id="save-button">LƯU CẤU HÌNH</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-        // --- CODE XỬ LÝ NÚT XÓA (MỚI THÊM) ---
-        const clearButton = document.getElementById('clear-button');
-        clearButton.addEventListener('click', () => {
-            if (confirm("Bạn có chắc muốn xóa hết nội dung văn bản không?")) {
-                document.getElementById('message-input').value = "";
-                // Focus lại vào ô nhập liệu để đánh máy luôn
-                document.getElementById('message-input').focus();
-            }
-        });
-
-        // --- CODE XỬ LÝ KÉO GIÃN TEXTAREA (GIỮ NGUYÊN) ---
+        // --- CODE XỬ LÝ KÉO GIÃN TEXTAREA (MỚI THÊM) ---
         const textarea = document.getElementById('message-input');
         const resizeHandle = document.getElementById('resize-handle');
         let isResizing = false;
         let lastDownY = 0;
 
+        // Xử lý sự kiện chuột (Desktop)
         resizeHandle.addEventListener('mousedown', (e) => {
             isResizing = true;
             lastDownY = e.clientY;
-            document.body.style.cursor = 'ns-resize';
-            e.preventDefault(); 
+            document.body.style.cursor = 'ns-resize'; // Đổi con trỏ chuột toàn trang
+            e.preventDefault(); // Ngăn chọn văn bản
         });
 
+        // Xử lý sự kiện cảm ứng (Mobile)
         resizeHandle.addEventListener('touchstart', (e) => {
             isResizing = true;
             lastDownY = e.touches[0].clientY;
-            e.preventDefault(); 
+            e.preventDefault(); // Ngăn cuộn trang
         }, { passive: false });
 
+        // Hàm chung xử lý kéo
         const handleMove = (clientY) => {
             if (!isResizing) return;
             const offset = clientY - lastDownY;
             const newHeight = textarea.offsetHeight + offset;
             
+            // Giới hạn chiều cao tối thiểu là 60px
             if (newHeight > 60) {
                 textarea.style.height = newHeight + 'px';
                 lastDownY = clientY;
             }
         };
 
+        // Hàm chung khi thả tay
         const handleUp = () => {
             isResizing = false;
             document.body.style.cursor = 'default';
         };
 
+        // Lắng nghe sự kiện di chuyển và thả tay trên toàn document
         document.addEventListener('mousemove', (e) => handleMove(e.clientY));
         document.addEventListener('mouseup', handleUp);
         
@@ -339,6 +316,7 @@
             if(isResizing) handleMove(e.touches[0].clientY);
         }, { passive: false });
         document.addEventListener('touchend', handleUp);
+        // --- KẾT THÚC CODE XỬ LÝ KÉO GIÃN ---
 
 
         // --- CODE FIREBASE (GIỮ NGUYÊN) ---
@@ -352,7 +330,7 @@
             appId: "1:614324382815:web:234ed4873b7156d80fffea"
         };
 
-        const app = initializeApp(firebaseConfig, 'ThongBaoAdminMobileResizeClear'); 
+        const app = initializeApp(firebaseConfig, 'ThongBaoAdminMobileResize'); 
         const database = getDatabase(app);
         const scheduleRef = ref(database, 'scheduleConfig');
 
