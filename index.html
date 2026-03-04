@@ -222,71 +222,80 @@
         .success { color: #28a745; }
         .error { color: #dc3545; }
 
-        /* Microphone styles */
+        /* Microphone styles tối ưu mobile */
         .microphone-container {
             display: flex;
             gap: 10px;
-            align-items: flex-end;
-            margin-top: 10px;
+            align-items: stretch;
+            margin-top: 15px;
             flex-wrap: wrap;
         }
 
         #microphone-button {
-            background-color: #f0f2f5;
-            border: 1px solid var(--input-border);
+            background: linear-gradient(145deg, #f0f2f5, #e0e5eb);
+            border: none;
             border-radius: 50px;
-            padding: 12px 20px;
+            padding: 14px 20px;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             color: #333;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            flex-shrink: 0;
+            flex: 1 1 auto;
+            min-width: 160px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             transition: all 0.2s;
-            user-select: none;
             -webkit-tap-highlight-color: transparent;
-            min-width: 140px;
         }
 
         #microphone-button:active {
-            background-color: #e0e5eb;
+            transform: scale(0.97);
+            background: linear-gradient(145deg, #e0e5eb, #d0d5db);
         }
 
         #microphone-button.listening {
-            background-color: #ff6b6b;
+            background: linear-gradient(145deg, #ff6b6b, #ff5252);
             color: white;
-            border-color: #ff6b6b;
-            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+            animation: pulse-mobile 1.5s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.02); opacity: 0.9; }
-            100% { transform: scale(1); opacity: 1; }
+        @keyframes pulse-mobile {
+            0% { opacity: 1; }
+            50% { opacity: 0.9; box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
+            100% { opacity: 1; }
         }
 
         #speech-status {
             font-size: 14px;
             color: #666;
             background: #f8f9fa;
-            padding: 8px 16px;
-            border-radius: 20px;
-            flex-grow: 1;
-            border: 1px dashed #ccc;
+            padding: 12px 16px;
+            border-radius: 30px;
+            flex: 2 1 200px;
+            border: 1px solid #e0e0e0;
             min-height: 20px;
             word-break: break-word;
             white-space: normal;
             line-height: 1.4;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        /* Real-time transcript highlight */
-        .interim-highlight {
-            background-color: rgba(102, 126, 234, 0.1);
-            border-left: 3px solid var(--primary-color);
-            transition: background-color 0.3s;
+        /* Hiển thị real-time đẹp hơn */
+        .interim-text {
+            color: var(--primary-color);
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .word-count {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
         }
 
         @media (min-width: 600px) {
@@ -313,8 +322,9 @@
                 <textarea id="message-input" placeholder="Nhập lời nhắn..."></textarea>
                 <div id="resize-handle" class="resize-handle" title="Kéo để chỉnh kích thước"></div>
             </div>
+            <div class="word-count" id="word-count">0 từ</div>
 
-            <!-- Khu vực micro real-time -->
+            <!-- Khu vực micro tối ưu mobile -->
             <div class="microphone-container">
                 <button id="microphone-button">🎤 Bắt đầu ghi âm</button>
                 <span id="speech-status">Sẵn sàng</span>
@@ -357,6 +367,7 @@
         clearButton.addEventListener('click', () => {
             if (confirm("Bạn có chắc muốn xóa hết nội dung văn bản không?")) {
                 document.getElementById('message-input').value = "";
+                updateWordCount();
                 document.getElementById('message-input').focus();
             }
         });
@@ -402,7 +413,16 @@
         }, { passive: false });
         document.addEventListener('touchend', handleUp);
 
-        // --- SPEECH TO TEXT REAL-TIME & CONTINUOUS ---
+        // --- CẬP NHẬT ĐẾM TỪ ---
+        function updateWordCount() {
+            const text = textarea.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            document.getElementById('word-count').textContent = words + ' từ';
+        }
+        
+        textarea.addEventListener('input', updateWordCount);
+
+        // --- SPEECH TO TEXT TỐI ƯU CHO MOBILE (CHỐNG TRÙNG) ---
         const micButton = document.getElementById('microphone-button');
         const speechStatus = document.getElementById('speech-status');
         
@@ -416,111 +436,97 @@
         } else {
             let recognition = null;
             let isListening = false;
-            let finalTranscript = ''; // Văn bản đã hoàn chỉnh
-            let timeoutId = null;
-
-            // Khởi tạo recognition mới
-            function createRecognition() {
-                const recog = new SpeechRecognition();
-                recog.lang = 'vi-VN'; // Hỗ trợ tiếng Việt
-                recog.continuous = true; // Ghi âm liên tục
-                recog.interimResults = true; // Hiển thị kết quả tạm thời (real-time)
-                recog.maxAlternatives = 1;
-                return recog;
-            }
-
-            // Cập nhật textarea với kết quả real-time
-            function updateTextarea(finalText, interimText) {
-                // Lấy nội dung hiện tại (trừ đi phần interim cũ nếu có)
-                const currentText = textarea.value;
-                
-                // Xóa phần interim cũ (phần tạm thời) nếu nó đang được hiển thị
-                // Chúng ta sẽ dùng một cách đơn giản: lưu finalTranscript riêng
-                // và hiển thị finalTranscript + interimText
-                
-                // Nếu interimText không rỗng, hiển thị final + interim
-                if (interimText.trim() !== '') {
-                    textarea.value = finalText + (finalText ? ' ' : '') + '📝 ' + interimText + ' ...';
-                } else {
-                    textarea.value = finalText;
-                }
-                
-                // Tự động cuộn xuống
-                textarea.scrollTop = textarea.scrollHeight;
-            }
+            let finalText = ''; // Lưu văn bản đã hoàn chỉnh
+            let lastProcessedIndex = 0; // Đánh dấu đã xử lý đến đâu
+            let restartTimeout = null;
+            
+            // Phát hiện mobile
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
             function startListening() {
                 if (isListening) return;
                 
                 try {
-                    recognition = createRecognition();
+                    // Lưu lại văn bản hiện tại làm gốc
+                    finalText = textarea.value;
+                    lastProcessedIndex = 0;
+                    
+                    recognition = new SpeechRecognition();
+                    recognition.lang = 'vi-VN';
+                    
+                    // Cấu hình khác nhau cho mobile và desktop
+                    if (isMobile) {
+                        // Trên mobile: dùng chế độ không liên tục để tránh trùng
+                        recognition.continuous = false;
+                        recognition.interimResults = true;
+                        recognition.maxAlternatives = 1;
+                    } else {
+                        // Trên desktop: dùng liên tục
+                        recognition.continuous = true;
+                        recognition.interimResults = true;
+                        recognition.maxAlternatives = 1;
+                    }
                     
                     recognition.onstart = () => {
                         isListening = true;
-                        finalTranscript = textarea.value; // Lấy văn bản hiện tại làm gốc
                         micButton.classList.add('listening');
-                        micButton.innerHTML = '⏹️ Đang ghi âm... (bấm để dừng)';
-                        speechStatus.textContent = 'Đang nghe liên tục, hãy nói...';
+                        micButton.innerHTML = isMobile ? '⏹️ Dừng ghi âm' : '⏹️ Đang ghi âm...';
+                        speechStatus.textContent = isMobile ? 'Đang nghe... (nói và dừng)' : 'Đang nghe liên tục...';
                         speechStatus.style.color = '#667eea';
                     };
 
                     recognition.onresult = (event) => {
-                        // Xóa timeout nếu có
-                        if (timeoutId) {
-                            clearTimeout(timeoutId);
-                            timeoutId = null;
-                        }
-
                         let interimTranscript = '';
+                        let finalTranscript = '';
                         
+                        // Xử lý kết quả
                         for (let i = event.resultIndex; i < event.results.length; i++) {
                             const transcript = event.results[i][0].transcript;
                             
                             if (event.results[i].isFinal) {
                                 // Kết quả cuối cùng
-                                if (finalTranscript === '') {
-                                    finalTranscript = transcript;
-                                } else {
-                                    // Kiểm tra để tránh trùng lặp
-                                    if (!finalTranscript.endsWith(transcript) && 
-                                        !finalTranscript.includes(transcript + ' ') &&
-                                        !finalTranscript.includes(' ' + transcript)) {
-                                        finalTranscript += ' ' + transcript;
-                                    }
-                                }
+                                finalTranscript += transcript + ' ';
                             } else {
-                                // Kết quả tạm thời (real-time)
+                                // Kết quả tạm thời
                                 interimTranscript += transcript + ' ';
                             }
                         }
                         
-                        // Cập nhật textarea với final + interim
-                        if (interimTranscript.trim() !== '') {
-                            textarea.value = finalTranscript + (finalTranscript ? ' ' : '') + '📝 ' + interimTranscript;
-                        } else {
-                            textarea.value = finalTranscript;
-                        }
-                        
-                        // Cập nhật status
-                        if (interimTranscript.trim() !== '') {
-                            speechStatus.textContent = 'Đang nhận: "' + interimTranscript.substring(0, 30) + '..."';
-                        }
-                        
-                        textarea.scrollTop = textarea.scrollHeight;
-                        
-                        // Đặt timeout để reset status nếu không có âm thanh
-                        if (timeoutId) clearTimeout(timeoutId);
-                        timeoutId = setTimeout(() => {
-                            if (isListening) {
-                                speechStatus.textContent = 'Đang nghe... (im lặng)';
+                        // Cập nhật hiển thị
+                        if (finalTranscript) {
+                            // Kiểm tra trùng lặp trước khi thêm
+                            const finalTrimmed = finalTranscript.trim();
+                            
+                            // Chỉ thêm nếu không phải là lặp lại đoạn cuối
+                            if (finalTrimmed && !finalText.endsWith(finalTrimmed) && !finalText.includes(finalTrimmed + ' ')) {
+                                finalText = finalText + (finalText ? ' ' : '') + finalTrimmed;
                             }
-                        }, 3000);
+                        }
+                        
+                        // Hiển thị final + interim (nếu có)
+                        if (interimTranscript.trim()) {
+                            textarea.value = finalText + (finalText ? ' ' : '') + 
+                                '<span class="interim-text">' + interimTranscript + '</span>';
+                            
+                            // Cập nhật status với nội dung tạm thời
+                            const shortInterim = interimTranscript.length > 25 ? 
+                                interimTranscript.substring(0, 25) + '...' : interimTranscript;
+                            speechStatus.textContent = '📝 ' + shortInterim;
+                        } else {
+                            textarea.value = finalText;
+                            if (isListening) {
+                                speechStatus.textContent = 'Đang nghe...';
+                            }
+                        }
+                        
+                        // Cuộn xuống và cập nhật đếm từ
+                        textarea.scrollTop = textarea.scrollHeight;
+                        updateWordCount();
                     };
 
                     recognition.onerror = (event) => {
                         console.error('Lỗi speech:', event.error);
                         
-                        // Không hiển thị lỗi "no-speech" vì nó thường xảy ra khi im lặng
                         if (event.error !== 'no-speech') {
                             let errorMsg = 'Lỗi ghi âm.';
                             if (event.error === 'not-allowed') errorMsg = 'Chưa cấp quyền micro.';
@@ -529,20 +535,39 @@
                             
                             speechStatus.textContent = errorMsg;
                             speechStatus.style.color = '#dc3545';
+                        }
+                        
+                        // Trên mobile, không tự động dừng khi có lỗi nhỏ
+                        if (event.error !== 'no-speech' || !isMobile) {
                             stopListening();
                         }
                     };
 
                     recognition.onend = () => {
-                        // Tự động khởi động lại nếu vẫn đang trong trạng thái listening
-                        // Điều này giúp ghi âm liên tục không bị ngắt
+                        console.log('Recognition ended');
+                        
                         if (isListening) {
-                            console.log('Recognition ended, restarting...');
-                            try {
-                                recognition.start();
-                            } catch (e) {
-                                console.log('Could not restart recognition', e);
-                                stopListening();
+                            if (isMobile) {
+                                // Trên mobile: tự động khởi động lại sau 0.5s để ghi âm liên tục
+                                if (restartTimeout) clearTimeout(restartTimeout);
+                                restartTimeout = setTimeout(() => {
+                                    if (isListening) {
+                                        try {
+                                            recognition.start();
+                                        } catch (e) {
+                                            console.log('Không thể restart recognition', e);
+                                            stopListening();
+                                        }
+                                    }
+                                }, 500);
+                            } else {
+                                // Trên desktop: tự động khởi động lại ngay
+                                try {
+                                    recognition.start();
+                                } catch (e) {
+                                    console.log('Không thể restart recognition', e);
+                                    stopListening();
+                                }
                             }
                         } else {
                             resetMicButton();
@@ -567,15 +592,20 @@
                     } catch (e) {}
                 }
                 
-                // Xóa phần interim marker nếu còn
+                if (restartTimeout) {
+                    clearTimeout(restartTimeout);
+                    restartTimeout = null;
+                }
+                
+                // Xóa các định dạng tạm thời
                 const currentValue = textarea.value;
-                if (currentValue.includes('📝')) {
-                    // Loại bỏ phần interim
-                    const parts = currentValue.split('📝');
-                    textarea.value = parts[0].trim();
+                if (currentValue.includes('<span')) {
+                    // Loại bỏ HTML tags
+                    textarea.value = currentValue.replace(/<[^>]*>/g, '');
                 }
                 
                 resetMicButton();
+                updateWordCount();
             }
 
             function resetMicButton() {
@@ -584,10 +614,6 @@
                 micButton.innerHTML = '🎤 Bắt đầu ghi âm';
                 speechStatus.textContent = 'Sẵn sàng';
                 speechStatus.style.color = '#666';
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                    timeoutId = null;
-                }
             }
 
             micButton.addEventListener('click', () => {
@@ -595,6 +621,13 @@
                     stopListening();
                 } else {
                     startListening();
+                }
+            });
+            
+            // Cleanup khi rời trang
+            window.addEventListener('beforeunload', () => {
+                if (isListening) {
+                    stopListening();
                 }
             });
         }
@@ -640,6 +673,7 @@
                         dayInputs[dayKey].value = timesArray.join(', ');
                     }
                 }
+                updateWordCount();
             }
             
             statusDiv.textContent = 'Đã tải xong.';
@@ -691,6 +725,9 @@
                     saveButton.disabled = false;
                 });
         });
+
+        // Cập nhật word count ban đầu
+        updateWordCount();
 
     </script>
 </body>
