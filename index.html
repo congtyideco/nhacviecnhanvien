@@ -24,7 +24,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Header cố định phía trên */
         .app-header {
             background: var(--primary-gradient);
             color: white;
@@ -44,12 +43,11 @@
 
         .container {
             padding: var(--spacing-base);
-            padding-bottom: 120px; /* Chừa chỗ cho nút lưu cố định */
+            padding-bottom: 120px;
             max-width: 600px;
             margin: 0 auto;
         }
 
-        /* Style cho các khối (Card) */
         .card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -75,14 +73,13 @@
             color: #444;
         }
 
-        /* Input và Textarea tối ưu cho ngón tay */
         textarea, input[type="text"] {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--input-border);
             border-radius: 8px;
             box-sizing: border-box;
-            font-size: 16px; 
+            font-size: 16px;
             background-color: #fafafa;
             transition: border-color 0.3s, background-color 0.3s;
         }
@@ -93,7 +90,6 @@
             background-color: #fff;
         }
 
-        /* Tùy chỉnh riêng cho Textarea để hỗ trợ kéo thả */
         .textarea-wrapper {
             position: relative;
             display: flex;
@@ -101,15 +97,14 @@
         }
 
         textarea {
-            height: 120px; /* Chiều cao mặc định */
+            height: 120px;
             min-height: 80px;
-            resize: vertical; /* Hỗ trợ resize cho PC */
+            resize: vertical;
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
             border-bottom: none;
         }
 
-        /* Thanh kéo (Resize Handle) dành cho Mobile */
         .resize-handle {
             height: 24px;
             background-color: #e9ecef;
@@ -120,8 +115,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: ns-resize; 
-            touch-action: none; 
+            cursor: ns-resize;
+            touch-action: none;
             color: #888;
         }
         
@@ -133,7 +128,6 @@
             border-bottom: 2px solid #bbb;
         }
 
-        /* Nút Xóa Mới Thêm */
         .btn-clear {
             margin-top: 10px;
             background-color: #fff0f0;
@@ -161,7 +155,6 @@
             line-height: 1.4;
         }
 
-        /* Grid hiển thị ngày */
         .day-group {
             margin-bottom: 15px;
             position: relative;
@@ -187,7 +180,6 @@
             border-radius: 4px;
         }
 
-        /* Thanh trạng thái và nút bấm cố định phía dưới (Sticky Footer) */
         .sticky-footer {
             position: fixed;
             bottom: 0;
@@ -230,6 +222,73 @@
         .success { color: #28a745; }
         .error { color: #dc3545; }
 
+        /* Microphone styles */
+        .microphone-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        #microphone-button {
+            background-color: #f0f2f5;
+            border: 1px solid var(--input-border);
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            min-width: 140px;
+        }
+
+        #microphone-button:active {
+            background-color: #e0e5eb;
+        }
+
+        #microphone-button.listening {
+            background-color: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.02); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        #speech-status {
+            font-size: 14px;
+            color: #666;
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            flex-grow: 1;
+            border: 1px dashed #ccc;
+            min-height: 20px;
+            word-break: break-word;
+            white-space: normal;
+            line-height: 1.4;
+        }
+
+        /* Real-time transcript highlight */
+        .interim-highlight {
+            background-color: rgba(102, 126, 234, 0.1);
+            border-left: 3px solid var(--primary-color);
+            transition: background-color 0.3s;
+        }
+
         @media (min-width: 600px) {
             .schedule-grid {
                 display: grid;
@@ -253,6 +312,12 @@
             <div class="textarea-wrapper">
                 <textarea id="message-input" placeholder="Nhập lời nhắn..."></textarea>
                 <div id="resize-handle" class="resize-handle" title="Kéo để chỉnh kích thước"></div>
+            </div>
+
+            <!-- Khu vực micro real-time -->
+            <div class="microphone-container">
+                <button id="microphone-button">🎤 Bắt đầu ghi âm</button>
+                <span id="speech-status">Sẵn sàng</span>
             </div>
 
             <button id="clear-button" class="btn-clear">🗑️ Xóa nội dung để viết lại</button>
@@ -287,17 +352,16 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-        // --- CODE XỬ LÝ NÚT XÓA (MỚI THÊM) ---
+        // --- XỬ LÝ NÚT XÓA ---
         const clearButton = document.getElementById('clear-button');
         clearButton.addEventListener('click', () => {
             if (confirm("Bạn có chắc muốn xóa hết nội dung văn bản không?")) {
                 document.getElementById('message-input').value = "";
-                // Focus lại vào ô nhập liệu để đánh máy luôn
                 document.getElementById('message-input').focus();
             }
         });
 
-        // --- CODE XỬ LÝ KÉO GIÃN TEXTAREA (GIỮ NGUYÊN) ---
+        // --- XỬ LÝ KÉO GIÃN TEXTAREA ---
         const textarea = document.getElementById('message-input');
         const resizeHandle = document.getElementById('resize-handle');
         let isResizing = false;
@@ -320,7 +384,6 @@
             if (!isResizing) return;
             const offset = clientY - lastDownY;
             const newHeight = textarea.offsetHeight + offset;
-            
             if (newHeight > 60) {
                 textarea.style.height = newHeight + 'px';
                 lastDownY = clientY;
@@ -334,14 +397,209 @@
 
         document.addEventListener('mousemove', (e) => handleMove(e.clientY));
         document.addEventListener('mouseup', handleUp);
-        
         document.addEventListener('touchmove', (e) => {
             if(isResizing) handleMove(e.touches[0].clientY);
         }, { passive: false });
         document.addEventListener('touchend', handleUp);
 
+        // --- SPEECH TO TEXT REAL-TIME & CONTINUOUS ---
+        const micButton = document.getElementById('microphone-button');
+        const speechStatus = document.getElementById('speech-status');
+        
+        // Kiểm tra hỗ trợ Web Speech API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            micButton.disabled = true;
+            micButton.style.opacity = 0.5;
+            speechStatus.textContent = 'Trình duyệt không hỗ trợ ghi âm.';
+            speechStatus.style.color = '#dc3545';
+        } else {
+            let recognition = null;
+            let isListening = false;
+            let finalTranscript = ''; // Văn bản đã hoàn chỉnh
+            let timeoutId = null;
 
-        // --- CODE FIREBASE (GIỮ NGUYÊN) ---
+            // Khởi tạo recognition mới
+            function createRecognition() {
+                const recog = new SpeechRecognition();
+                recog.lang = 'vi-VN'; // Hỗ trợ tiếng Việt
+                recog.continuous = true; // Ghi âm liên tục
+                recog.interimResults = true; // Hiển thị kết quả tạm thời (real-time)
+                recog.maxAlternatives = 1;
+                return recog;
+            }
+
+            // Cập nhật textarea với kết quả real-time
+            function updateTextarea(finalText, interimText) {
+                // Lấy nội dung hiện tại (trừ đi phần interim cũ nếu có)
+                const currentText = textarea.value;
+                
+                // Xóa phần interim cũ (phần tạm thời) nếu nó đang được hiển thị
+                // Chúng ta sẽ dùng một cách đơn giản: lưu finalTranscript riêng
+                // và hiển thị finalTranscript + interimText
+                
+                // Nếu interimText không rỗng, hiển thị final + interim
+                if (interimText.trim() !== '') {
+                    textarea.value = finalText + (finalText ? ' ' : '') + '📝 ' + interimText + ' ...';
+                } else {
+                    textarea.value = finalText;
+                }
+                
+                // Tự động cuộn xuống
+                textarea.scrollTop = textarea.scrollHeight;
+            }
+
+            function startListening() {
+                if (isListening) return;
+                
+                try {
+                    recognition = createRecognition();
+                    
+                    recognition.onstart = () => {
+                        isListening = true;
+                        finalTranscript = textarea.value; // Lấy văn bản hiện tại làm gốc
+                        micButton.classList.add('listening');
+                        micButton.innerHTML = '⏹️ Đang ghi âm... (bấm để dừng)';
+                        speechStatus.textContent = 'Đang nghe liên tục, hãy nói...';
+                        speechStatus.style.color = '#667eea';
+                    };
+
+                    recognition.onresult = (event) => {
+                        // Xóa timeout nếu có
+                        if (timeoutId) {
+                            clearTimeout(timeoutId);
+                            timeoutId = null;
+                        }
+
+                        let interimTranscript = '';
+                        
+                        for (let i = event.resultIndex; i < event.results.length; i++) {
+                            const transcript = event.results[i][0].transcript;
+                            
+                            if (event.results[i].isFinal) {
+                                // Kết quả cuối cùng
+                                if (finalTranscript === '') {
+                                    finalTranscript = transcript;
+                                } else {
+                                    // Kiểm tra để tránh trùng lặp
+                                    if (!finalTranscript.endsWith(transcript) && 
+                                        !finalTranscript.includes(transcript + ' ') &&
+                                        !finalTranscript.includes(' ' + transcript)) {
+                                        finalTranscript += ' ' + transcript;
+                                    }
+                                }
+                            } else {
+                                // Kết quả tạm thời (real-time)
+                                interimTranscript += transcript + ' ';
+                            }
+                        }
+                        
+                        // Cập nhật textarea với final + interim
+                        if (interimTranscript.trim() !== '') {
+                            textarea.value = finalTranscript + (finalTranscript ? ' ' : '') + '📝 ' + interimTranscript;
+                        } else {
+                            textarea.value = finalTranscript;
+                        }
+                        
+                        // Cập nhật status
+                        if (interimTranscript.trim() !== '') {
+                            speechStatus.textContent = 'Đang nhận: "' + interimTranscript.substring(0, 30) + '..."';
+                        }
+                        
+                        textarea.scrollTop = textarea.scrollHeight;
+                        
+                        // Đặt timeout để reset status nếu không có âm thanh
+                        if (timeoutId) clearTimeout(timeoutId);
+                        timeoutId = setTimeout(() => {
+                            if (isListening) {
+                                speechStatus.textContent = 'Đang nghe... (im lặng)';
+                            }
+                        }, 3000);
+                    };
+
+                    recognition.onerror = (event) => {
+                        console.error('Lỗi speech:', event.error);
+                        
+                        // Không hiển thị lỗi "no-speech" vì nó thường xảy ra khi im lặng
+                        if (event.error !== 'no-speech') {
+                            let errorMsg = 'Lỗi ghi âm.';
+                            if (event.error === 'not-allowed') errorMsg = 'Chưa cấp quyền micro.';
+                            else if (event.error === 'audio-capture') errorMsg = 'Không tìm thấy micro.';
+                            else if (event.error === 'network') errorMsg = 'Lỗi mạng.';
+                            
+                            speechStatus.textContent = errorMsg;
+                            speechStatus.style.color = '#dc3545';
+                            stopListening();
+                        }
+                    };
+
+                    recognition.onend = () => {
+                        // Tự động khởi động lại nếu vẫn đang trong trạng thái listening
+                        // Điều này giúp ghi âm liên tục không bị ngắt
+                        if (isListening) {
+                            console.log('Recognition ended, restarting...');
+                            try {
+                                recognition.start();
+                            } catch (e) {
+                                console.log('Could not restart recognition', e);
+                                stopListening();
+                            }
+                        } else {
+                            resetMicButton();
+                        }
+                    };
+
+                    recognition.start();
+                    
+                } catch (error) {
+                    console.error('Lỗi khởi động micro:', error);
+                    speechStatus.textContent = 'Không thể truy cập micro.';
+                    speechStatus.style.color = '#dc3545';
+                    stopListening();
+                }
+            }
+
+            function stopListening() {
+                if (recognition && isListening) {
+                    isListening = false;
+                    try {
+                        recognition.stop();
+                    } catch (e) {}
+                }
+                
+                // Xóa phần interim marker nếu còn
+                const currentValue = textarea.value;
+                if (currentValue.includes('📝')) {
+                    // Loại bỏ phần interim
+                    const parts = currentValue.split('📝');
+                    textarea.value = parts[0].trim();
+                }
+                
+                resetMicButton();
+            }
+
+            function resetMicButton() {
+                isListening = false;
+                micButton.classList.remove('listening');
+                micButton.innerHTML = '🎤 Bắt đầu ghi âm';
+                speechStatus.textContent = 'Sẵn sàng';
+                speechStatus.style.color = '#666';
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+            }
+
+            micButton.addEventListener('click', () => {
+                if (isListening) {
+                    stopListening();
+                } else {
+                    startListening();
+                }
+            });
+        }
+
+        // --- FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyCaEzd8OMJ553ETba-M_pxWSe2bDX9fh_I", 
             authDomain: "ideco-f82d4.firebaseapp.com",
